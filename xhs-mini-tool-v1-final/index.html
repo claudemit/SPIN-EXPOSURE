@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SPIN EXPOSURE · 旋转曝光</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#f3f2ed;color:#171714;font-family:Inter,"PingFang SC","Microsoft YaHei",system-ui,sans-serif}
+body{padding:18px 14px 32px}.app{width:100%;max-width:520px;margin:auto}
+.top{margin:2px 2px 14px}.brand b{display:block;font-size:19px;letter-spacing:.08em}.brand span{display:block;margin-top:3px;color:#77736b;font-size:12px;letter-spacing:.08em}
+.card{background:#fff;border:1px solid #dedbd4;border-radius:22px;box-shadow:0 10px 30px rgba(30,28,22,.06);overflow:hidden}
+.stageWrap{position:relative;padding:10px;background:#171714}.stage{position:relative;width:100%;margin:auto;overflow:hidden;border-radius:15px;background:#0f0f0e;touch-action:none;user-select:none;cursor:crosshair;line-height:0}
+canvas{display:block;width:100%;height:auto}
+.center{position:absolute;width:34px;height:34px;border:1.5px solid #fff;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 0 1px rgba(0,0,0,.55),0 2px 12px rgba(0,0,0,.35);pointer-events:none}
+.center:before,.center:after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#fff}.center:before{width:10px;height:1px}.center:after{width:1px;height:10px}
+.controls{padding:14px 15px 16px}.tip{margin:1px 0 14px;color:#77736b;font-size:11px}.row{display:grid;grid-template-columns:68px minmax(0,1fr) 36px;align-items:center;grid-gap:10px;margin:13px 0}.row label{font-size:12px;color:#47443e}.value{text-align:right;font-size:12px;font-variant-numeric:tabular-nums;color:#706b63}
+.presets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-gap:8px;margin:0 0 15px}.preset{min-height:38px;border:1px solid #d9d5cd;border-radius:11px;background:#faf9f6;color:#47443e;font-size:12px;cursor:pointer}.preset.active{border-color:#24231f;background:#24231f;color:#fff}.preset:focus{outline:2px solid #7562af;outline-offset:2px}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:24px;margin:0;background:transparent;touch-action:pan-y}input[type=range]::-webkit-slider-runnable-track{height:5px;border-radius:99px;background:#e8e4dc}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;margin-top:-7.5px;border:2px solid #fff;border-radius:50%;background:#22211d;box-shadow:0 2px 8px rgba(0,0,0,.14)}input[type=range]::-moz-range-track{height:5px;border-radius:99px;background:#e8e4dc}input[type=range]::-moz-range-thumb{width:20px;height:20px;border:2px solid #fff;border-radius:50%;background:#22211d}
+.actions{display:grid;grid-template-columns:1fr 1fr;grid-gap:8px;margin-top:18px}button{font:inherit}.action{min-height:42px;border:1px solid #d9d5cd;border-radius:12px;background:#fff;color:#26241f;font-size:12px;cursor:pointer}.action.primary{background:#24231f;border-color:#24231f;color:#fff}.action:disabled{opacity:.55;cursor:default}.action:focus,input:focus{outline:2px solid #7562af;outline-offset:2px}.file{display:none}
+.status{min-height:19px;margin:12px 1px 0;font-size:11px;color:#77736b}.status:empty{display:none}.cancel{grid-column:1/-1;background:#f8f7f4}.cancel[hidden]{display:none}
+.busy::after{content:"正在优化预览…";position:absolute;right:15px;top:15px;padding:7px 9px;border-radius:99px;background:rgba(255,255,255,.88);color:#292722;font-size:10px}
+@media(max-width:420px){body{padding:12px 10px 24px}.controls{padding:12px}.stageWrap{padding:8px}}
+
+body{padding-top:18px;padding-bottom:32px;padding-top:calc(18px + var(--safe-area-inset-top, env(safe-area-inset-top, 0px)));padding-bottom:calc(32px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));-webkit-touch-callout:none}
+@media(max-width:420px){body{padding-top:12px;padding-bottom:24px;padding-top:calc(12px + var(--safe-area-inset-top, env(safe-area-inset-top, 0px)));padding-bottom:calc(24px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)))}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top"><div class="brand"><b>SPIN EXPOSURE</b><span>旋转曝光</span></div></header>
+  <main class="card">
+    <div class="stageWrap" id="stageWrap"><div class="stage" id="stage" aria-label="图片预览，拖动以改变旋转中心"><canvas id="main" width="570" height="760"></canvas><div class="center" id="center"></div></div></div>
+    <div class="controls">
+      <p class="tip">拖动 · 改变旋转中心</p>
+      <div class="presets" role="group" aria-label="旋转预设"><button class="preset" type="button" data-preset="light" aria-pressed="false">轻旋</button><button class="preset active" type="button" data-preset="standard" aria-pressed="true">标准</button><button class="preset" type="button" data-preset="vortex" aria-pressed="false">漩涡</button></div>
+      <div class="row"><label for="angleSlider">旋转</label><input id="angleSlider" type="range" min="0" max="40" step="1" value="12"><output class="value" id="angleValue" for="angleSlider">12°</output></div>
+      <div class="row"><label for="focusSlider">中心清晰</label><input id="focusSlider" type="range" min="0" max="100" step="1" value="50"><output class="value" id="focusValue" for="focusSlider">50</output></div>
+      <div class="actions"><button class="action" id="importBtn" type="button">导入图片</button><button class="action primary" id="exportBtn" type="button">保存到相册</button><button class="action" id="holdOriginal" type="button">按住查看原图</button><button class="action" id="resetBtn" type="button">重置</button><button class="action cancel" id="cancelExportBtn" type="button" hidden>取消生成</button></div>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+      <input class="file" id="fileInput" type="file" accept="image/*">
+    </div>
+  </main>
+</div>
+<script src="./app.js"></script>
+</body>
+</html>
